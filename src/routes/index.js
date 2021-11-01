@@ -11,7 +11,7 @@ const userController = require('../controllers/userController');
 const ver = '/api';
 
 //index routes
-router.get(ver + '/',auth.check, function(req, res){ res.render('index', {title: 'Express mvc setting'}); });
+router.get(ver + '/', function(req, res){ res.render('index', {title: 'Doctor app is running thank you.'}); });
 
 //Auth rotues
 router.post(ver + '/login', authController.login);
