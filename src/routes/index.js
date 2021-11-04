@@ -8,21 +8,21 @@ const jobsController = require('../controllers/jobsController');
 //User controllers
 const userController = require('../controllers/userController');
 
-const ver = '/api';
+//const ver = '/api';
 
 //index routes
-router.get(ver + '/', function(req, res){ res.render('index', {title: 'Doctor app is running thank you.'}); });
+router.get('/', function(req, res){ res.render('index', {title: 'Doctor app is running thank you.'}); });
 
 //Auth rotues
-router.post(ver + '/login', authController.login);
-router.get(ver + '/logout', authController.logout);
+router.post('/login', authController.login);
+router.get('/logout', authController.logout);
 
 //User routes
-router.put(ver + '/change-status',auth.check, userController.changeStatus);
+router.put('/change-status',auth.check, userController.changeStatus);
 
 //Jobs routes
-router.get(ver + '/new-jobs',auth.check, jobsController.getNewJobs);
-router.put(ver + '/accept-job',auth.check, jobsController.acceptJob);
+router.get('/new-jobs',auth.check, jobsController.getNewJobs);
+router.put('/accept-job',auth.check, jobsController.acceptJob);
 
 
 module.exports = router;
