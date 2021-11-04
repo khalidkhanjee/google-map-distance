@@ -15,4 +15,13 @@ message.result_error    = (c) => { return "Data fetching error!"; }
 message.result_found    = (c) => { return "Records found."; }
 message.result_nfound   = (c) => { return "Records not found."; }
 
+message.db_error        = (c) => { return "DB error! Query not executed succesfully."; }
+
+
+//Job status returns
+message.in_progress = () => { return '0'; };
+message.pending     = () => { return '1'; };
+message.cancelled   = () => { return '3'; };
+message.completed   = () => { return '6'; };
+
 module.exports = message;

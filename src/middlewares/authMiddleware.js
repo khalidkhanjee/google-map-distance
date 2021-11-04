@@ -6,14 +6,14 @@ Auth.check = async (req, res, next) => {
   try {
     const token = req.headers.authorization.replace('Bearer ', '');
     var verifyOptions = {
-      expiresIn: '8h',
+      expiresIn: '5y',
       algorithm: "RS256"
     };
     const start = Date.now();
     let legit = jwt.verify(token, process.env.JWT_PUBLIC, verifyOptions);
     const executionTime = Date.now() - start;
     // h.log(`Token Verified in ${executionTime}ms`);
-    req.user = legit.data;
+    req.user = legit.user;
     next();
   } catch (error) {
     returnObj = h.resultObject([], false, 401, 'Auth failed');

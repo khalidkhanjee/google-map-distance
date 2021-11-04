@@ -22,5 +22,7 @@ router.put(ver + '/change-status',auth.check, userController.changeStatus);
 
 //Jobs routes
 router.get(ver + '/new-jobs',auth.check, jobsController.getNewJobs);
+router.put(ver + '/accept-job',auth.check, jobsController.acceptJob);
+
 
 module.exports = router;

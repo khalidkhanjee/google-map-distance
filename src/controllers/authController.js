@@ -10,9 +10,9 @@ authController.login = async (req, res) => {
   
   let returnObj = '';
   let code  = 500,
-  message   = m.login_error,
-  token     = '',
-  data      = '';
+  message   = m.login_error;
+  // token     = '',
+  // data      = '';
 
   try {
     let rows = await authModel.getSingleUser(req.body);
@@ -26,12 +26,12 @@ authController.login = async (req, res) => {
       if (doesMatch) {
         const userObject  = getUserObject(rows);
         //sign jwt Token
-        const getTokenn   = getToken(userObject);
+        const data   = getToken(userObject);
         //token
         // code        = 200;
         // message     = m.login_success();
-        data        = getTokenn.data;
-        data.token  = getTokenn.accessToken;
+        // let user        = getTokenn.data;
+        // let token       = getTokenn.accessToken;
         code = 200;
         returnObj = h.resultObject(data, true, code, m.login_success());
 
@@ -50,14 +50,14 @@ authController.login = async (req, res) => {
 const getToken = (userObject) => {
   try {
     const token = jwt.sign({
-      data: userObject
+      user: userObject
     }, process.env.JWT_SECRET, {
       expiresIn: '5y',
       algorithm: "RS256",
     });
     const resToken = {
-      accessToken: token,
-      data: { ...userObject },
+      token,
+      user: { ...userObject },
       ttl: '5y',
       createdAt: Date.now()
     }

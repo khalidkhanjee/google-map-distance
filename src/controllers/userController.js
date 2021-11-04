@@ -4,7 +4,6 @@ const coreModel = require('../models/coreModel');
 
 userController = {};
 
-//test unit to github and gitbucket
 userController.changeStatus = async (req, res) => {
     returnObj = {};
     try {
@@ -18,8 +17,8 @@ userController.changeStatus = async (req, res) => {
         returnObj = h.resultObject([], false, code, m.result_nfound());
       }
     } catch (e) {
-      let code = 500;
-      returnObj = h.resultObject([], false, code, m.result_error());
+      code = 500;
+      returnObj = h.resultObject([], false, code, m.db_error());
       throw e;
     } finally {
       res.status(code).send(returnObj);

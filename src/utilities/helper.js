@@ -70,4 +70,12 @@ helper.getProps2 = (o) => {
   return obj;
 };
 
+helper.checkExistsNotEmptyGreaterZero = (o, f) => {
+  if (helper.exists(o) && _.has(o, f) && o[f] > 0) {
+    return true;
+  }
+  return false;
+};
+
+
 module.exports = helper;
