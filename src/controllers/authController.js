@@ -8,12 +8,12 @@ authController = {};
 
 authController.login = async (req, res) => {
   
+  let returnObj = '';
   let code  = 500,
   message   = m.login_error,
   token     = '',
   data      = '';
 
-  
   try {
     let rows = await authModel.getSingleUser(req.body);
     if (!h.exists(rows)) {
