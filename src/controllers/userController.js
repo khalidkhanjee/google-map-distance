@@ -1,28 +1,25 @@
-const h         = require('./../utilities/helper');
-const m         = require('./../utilities/message');
+const h = require('./../utilities/helper');
+const constants = require("../utilities/constants");
 const coreModel = require('../models/coreModel');
 
 userController = {};
 
 userController.changeStatus = async (req, res) => {
-    returnObj = {};
-    try {
-        let obj = { active_status: req.body.active_status };
-        const result = await coreModel.update(obj, 'tbl_users', { user_id : req.user.user_id }, req.user);
-      if (h.exists(result)) {
-        code = 200;
-        returnObj = h.resultObject([], true, code, m.success('updated'));
-      } else {
-        code = 404;
-        returnObj = h.resultObject([], false, code, m.result_nfound());
-      }
-    } catch (e) {
-      code = 500;
-      returnObj = h.resultObject([], false, code, m.db_error());
-      throw e;
-    } finally {
-      res.status(code).send(returnObj);
+  let returnObj = h.resultObject([], false, 500, constants.BAD_REQUEST);
+  try {
+    let obj = h.getProps2(req);
+    const result = await coreModel.update({ active_status: obj.status }, 'tbl_users', { user_id: req.user.user_id });
+    if (h.exists(result)) {
+      returnObj = h.resultObject([], true, 200, constants.SUCCESS_UPDATE);
+    } else {
+      returnObj = h.resultObject([], true, 404, constants.ERROR_RECORD_NOT_FOUND);
     }
-  };
+  } catch (e) {
+    returnObj = h.resultObject([], false, 500, constants.DB_ERROR);
+    throw e;
+  } finally {
+    res.status(returnObj.statusCode).send(returnObj);
+  }
+};
 
 module.exports = userController;

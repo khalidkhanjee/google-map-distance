@@ -1,5 +1,5 @@
 const _ = require('underscore');
- 
+
 let helper = {};
 helper = _;
 helper.log = (...theArgs) => {
@@ -55,6 +55,24 @@ helper.exists = (o) => {
 helper.notExists = (o) => {
   return !helper.exists(o);
 };
+
+helper.getProps = (o) => {
+  let obj = {};
+  if (!_.isEmpty(o.params)) {
+    obj = Object.assign(obj, o.params);
+  }
+  if (!_.isEmpty(o.body)) {
+    obj = Object.assign(obj, o.body);
+  }
+  if (!_.isEmpty(o.query)) {
+    obj = Object.assign(obj, o.query);
+  }
+  if (!_.isEmpty(o.resource)) {
+    obj = Object.assign(obj, o.resource);
+  }
+  return obj;
+};
+
 
 helper.getProps2 = (o) => {
   let obj = {};

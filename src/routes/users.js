@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const h      = require("../utilities/helper");
+const h = require("../utilities/helper");
 const coreController = require('../controllers/coreController');
 const userController = require('../controllers/authController');
 

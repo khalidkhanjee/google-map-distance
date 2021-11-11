@@ -1,20 +1,26 @@
 require("dotenv").config();
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const morgan = require('morgan');
+const helmet = require('helmet');
+const cors = require('cors');
 
-var routes = require('./src/routes/index');
+const routes = require('./src/routes/index');
 
-var app = express();
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// app.use(dotenv());
-app.use(logger('dev'));
+// adding Helmet to enhance your API's security
+app.use(helmet());
+// enabling CORS for all requests
+app.use(cors());
+// adding morgan to log HTTP requests
+app.use(morgan(':remote-addr - [:date[web]] ":method :url HTTP/:http-version" :status Response Time::response-time ms'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

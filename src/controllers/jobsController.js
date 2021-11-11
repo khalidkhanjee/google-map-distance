@@ -1,22 +1,39 @@
-const h         = require('./../utilities/helper');
-const m         = require('./../utilities/message');
+const h = require('./../utilities/helper');
+const constants = require("../utilities/constants");
 const jobsModel = require('../models/jobsModel');
 const coreModel = require('../models/coreModel');
 
-const var_dump  = require('var_dump');
-const exit      = require('exit');
+const var_dump = require('var_dump');
+const exit = require('exit');
 
 jobsController = {};
 
 jobsController.getNewJobs = async (req, res) => {
-  let returnObj = h.resultObject([], false, 500, m.result_nfound());
+  let returnObj = h.resultObject([], false, 500, constants.ERROR_RETRIEVING_RECORD);
   try {
-    let filter = { user_id : req.user.user_id, service_type_id :'9' };
+    let filter = { user_id: req.user.user_id, service_type_id: constants.FORRE_MASHWARA_ID };
     let result = await jobsModel.getNewJobs(filter);
     if (h.checkNotEmpty(result)) {
-      returnObj = h.resultObject(result, true, 200, m.result_found());
+      returnObj = h.resultObject(result, true, 200, constants.RECORD_FOUND);
     } else {
-      returnObj = h.resultObject([], false, 404, m.result_nfound());
+      returnObj = h.resultObject([], false, 200, constants.RECORD_NOT_FOUND);
+    }
+  } catch (e) {
+    throw e;
+  } finally {
+    res.status(returnObj.statusCode).send(returnObj);
+  }
+};
+
+jobsController.getAcceptJobs = async (req, res) => {
+  let returnObj = h.resultObject([], false, 500, constants.ERROR_RETRIEVING_RECORD);
+  try {
+    let filter = { user_id: req.user.user_id, service_type_id: constants.FORRE_MASHWARA_ID };
+    let result = await jobsModel.getAcceptJobs(filter);
+    if (h.checkNotEmpty(result)) {
+      returnObj = h.resultObject(result, true, 200, constants.RECORD_FOUND);
+    } else {
+      returnObj = h.resultObject([], false, 200, constants.RECORD_NOT_FOUND);
     }
   } catch (e) {
     throw e;
@@ -26,29 +43,45 @@ jobsController.getNewJobs = async (req, res) => {
 };
 
 jobsController.acceptJob = async (req, res) => {
-  returnObj = {};
+  let returnObj = h.resultObject([], false, 500, constants.BAD_REQUEST);
   try {
-    code = 200;
-    req.body.job_status_id = m.in_progress();
-    const assignJob = await jobsModel.assignJob(req);
-    console.log(assignJob);
+    let obj = h.getProps2(req);
+    let iteration_date_time = obj.iteration_date + ' ' + obj.iteration_time;
+    let user_id = obj.customer_user_id;
+    delete obj.customer_user_id;
+    let assignData = { ...obj, user_id: user_id, job_status_id: constants.ASSIGNED, unix_iteration_date_time: Date.parse(iteration_date_time) / 1000, added_by: req.user.user_id };
+    const assignJob = await jobsModel.assignJob({ ...obj, job_status_id: constants.IN_PROGRESS }, assignData);
     if (h.exists(assignJob)) {
-      code = 200;
-      returnObj = h.resultObject([], true, code, m.success('updated'));
+      returnObj = h.resultObject([], true, 200, constants.SUCCESS_UPDATE);
     } else {
-      code = 404;
-      returnObj = h.resultObject([], false, code, m.result_nfound());
+      returnObj = h.resultObject([], false, 404, constants.ERROR_UPDATING_RECORD);
     }
   } catch (e) {
-    code = 500;
-    returnObj = h.resultObject([], false, code, m.db_error());
+    returnObj = h.resultObject([], false, 500, constants.ERROR_UPDATION_FAILED);
     throw e;
   } finally {
-    res.status(code).send(returnObj);
+    res.status(returnObj.statusCode).send(returnObj);
   }
 };
 
 
-
+jobsController.denyJob = async (req, res) => {
+  let returnObj = h.resultObject([], false, 500, constants.BAD_REQUEST);
+  try {
+    let obj = h.getProps2(req);
+    const iterationCancel = { job_status_id: constants.CANCELLED, updated_by: req.user.user_id };
+    const pendingJob = await jobsModel.iterationCancel({ ...obj, job_status_id: constants.PENDING }, iterationCancel);
+    if (h.exists(pendingJob)) {
+      returnObj = h.resultObject([], true, 200, constants.SUCCESS_UPDATE);
+    } else {
+      returnObj = h.resultObject([], false, 404, constants.ERROR_UPDATING_RECORD);
+    }
+  } catch (e) {
+    returnObj = h.resultObject([], false, 500, constants.ERROR_UPDATION_FAILED);
+    throw e;
+  } finally {
+    res.status(returnObj.statusCode).send(returnObj);
+  }
+};
 
 module.exports = jobsController;
