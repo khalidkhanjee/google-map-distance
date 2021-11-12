@@ -18,14 +18,14 @@ module.exports = Object.freeze({
 
   OFFLINE_STATUS: "You are offline,please online then it will process.",
   ALREADY_JOB_ASSIGN: "Doctor have already assign one job.",
-
+  ITEARTION_N_ASSIGN: "Assign iteration not found!",
   IN_PROGRESS_N_ACCEPTED: "The job is in progress, cannot be accepted again.",
   CANCELLED_N_ACCEPTED: "The job is cancelled, cannot be accepted.",
   COMPLETED_N_ACCEPTED: "The job is completed, cannot be accepted.",
 
   PENDING_N_DENIED: "The job is pending, cannot be denied.",
-  CANCELLED_N_DENIED: "The job is cancelled, cannot be denied.",
-  COMPLETED_N_DENIED: "The job is completed, cannot be denied.",
+  CANCELLED_N_DENIED: "The job is cancelled, cannot be denied or cancelled again.",
+  COMPLETED_N_DENIED: "The job is completed, cannot be denied or completed again.",
   //eshifa IDs
   AGENT_ROLE_ID: 7,
   ADMIN_ROLE_ID: 1,

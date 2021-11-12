@@ -20,13 +20,18 @@ router.post('/login', authController.login);
 router.get('/logout', authController.logout);
 
 router.use(auth.check);
+
 //Jobs routes
 router.get('/job/new', jobsController.getNewJobs);
 router.get('/job/accept', jobsController.getAcceptJobs);
+router.get('/job/complete', jobsController.getCompleteJobs);
 
-router.put('/job/:job_id/accept', auth.userStatus, exists.assignJob, exists.isValidJobID, exists.isPendingJobID, jobsController.acceptJob);
 
-router.put('/job/:job_id/deny', auth.userStatus, exists.isValidJobID, exists.isInProgressJobID, jobsController.denyJob);
+router.put('/job/:job_id/accept', auth.userStatus, exists.isValidJobID, exists.isPendingJobID, exists.assignIteration, jobsController.acceptJob);
+
+router.put('/job/:job_id/deny', auth.userStatus, exists.isValidJobID, exists.isInProgressJobID, exists.assignIteration, jobsController.denyJob);
+
+router.put('/job/:job_id/complete', auth.userStatus, exists.isValidJobID, exists.isInProgressJobID, exists.assignService, jobsController.completeJob);
 
 //User routes
 router.put('/user/change', userController.changeStatus);

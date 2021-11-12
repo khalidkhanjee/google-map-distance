@@ -1,5 +1,6 @@
 const h = require('./../utilities/helper');
 const knex = require('../config/knex');
+const { LOGGED_IN } = require('../utilities/constants');
 const jobsModel = {};
 
 // let table = 'tbl_jobs';
@@ -39,19 +40,35 @@ jobsModel.jobExists = async (params) => {
   return result;
 };
 
-jobsModel.assignJobExists = async (params) => {
+jobsModel.assignIterationExists = async (params) => {
   const result = await knex.select('*')
     .from({
       j: 'tbl_job_iterations'
     }).modify(qb => {
-      if (h.checkExistsNotEmpty(params, 'user_id')) {
-        qb.where('j.user_id', params.user_id)
+      if (h.checkExistsNotEmpty(params, 'agent_id')) {
+        qb.where('j.agent_id', params.agent_id)
           .andWhere('j.job_status_id', params.job_status_id)
       }
     }).first()
     .then(res => res, err => { throw err });
   return result;
 };
+
+jobsModel.assignServiceExists = async (params) => {
+  const result = await knex.select('*')
+    .from({
+      j: 'tbl_job_iterations'
+    }).modify(qb => {
+      if (h.checkExistsNotEmpty(params, 'job_detail_id') && h.checkExistsNotEmpty(params, 'agent_id')) {
+        qb.where('j.job_detail_id', params.job_detail_id)
+          .andWhere('j.agent_id', params.agent_id)
+          .andWhere('j.job_status_id', params.job_status_id)
+      }
+    }).first()
+    .then(res => res, err => { throw err });
+  return result;
+};
+
 
 jobsModel.getAcceptJobs = async (filter) => {
   const result = knex.select('j.job_id', 'd.job_detail_id', 'customer_user_id', 'j.service_type_name', 'j.customer_name', 'j.gender', 'j.contact_number', 'j.city_name', 'j.job_date_time')
@@ -62,7 +79,26 @@ jobsModel.getAcceptJobs = async (filter) => {
         qb.where('j.service_type_id', filter.service_type_id);
       }
     }).then(res => {
-      return h.objectKeysToLowerCase(res);
+      return res;
+    },
+      err => {
+        h.error(err);
+        throw err;
+      }
+    );
+  return result;
+};
+
+jobsModel.getCompleteJobs = async (filter) => {
+  const result = knex.select('j.job_id', 'd.job_detail_id', 'customer_user_id', 'j.service_type_name', 'j.customer_name', 'j.gender', 'j.contact_number', 'j.city_name', 'j.job_date_time')
+    .from({
+      j: 'vu_doctor_complete_jobs'
+    }).join('tbl_job_detail as d', 'd.job_id', '=', 'j.job_id').modify(function (qb) {
+      if (h.exists(filter.service_type_id)) {
+        qb.where('j.service_type_id', filter.service_type_id);
+      }
+    }).then(res => {
+      return res;
     },
       err => {
         h.error(err);
@@ -99,8 +135,6 @@ jobsModel.assignJob = async (params, assignData) => {
 
 
 jobsModel.iterationCancel = async (params, cancelData) => {
-  // console.log('Params:', params);
-  // console.log('cancelData:', cancelData);
   const where = { job_id: params.job_id };
   const status = { job_status_id: params.job_status_id };
   const job_detail_id = { job_detail_id: params.job_detail_id };
@@ -118,6 +152,35 @@ jobsModel.iterationCancel = async (params, cancelData) => {
         await knex.table('tbl_job_iterations')
           .where(job_detail_id)
           .update(cancelData)
+          .transacting(trx);
+      }
+      return h.objectKeysToLowerCase(trx);
+    })
+  } catch (e) {
+    throw e;
+  }
+};
+
+
+jobsModel.completeJob = async (params, updateData) => {
+  console.log(updateData);
+  const job_id = { job_id: params.job_id };
+  const where_iteration = { agent_id: params.agent_id, job_detail_id: params.job_detail_id, job_status_id: params.job_status_id };
+  // const job_detail_id = {  };
+  try {
+    return await knex.transaction(async (trx) => {
+      if (h.checkExistsNotEmptyGreaterZero(params, 'job_id') && h.checkExistsNotEmptyGreaterZero(params, 'job_detail_id')) {
+        await knex.table('tbl_jobs')
+          .where(job_id)
+          .update(updateData)
+          .transacting(trx);
+        await knex.table('tbl_job_detail')
+          .where(job_id)
+          .update(updateData)
+          .transacting(trx);
+        await knex.table('tbl_job_iterations')
+          .where(where_iteration)
+          .update(updateData)
           .transacting(trx);
       }
       return h.objectKeysToLowerCase(trx);

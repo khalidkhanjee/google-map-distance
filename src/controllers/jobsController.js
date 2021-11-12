@@ -5,6 +5,7 @@ const coreModel = require('../models/coreModel');
 
 const var_dump = require('var_dump');
 const exit = require('exit');
+const { ASSIGNED } = require('../utilities/constants');
 
 jobsController = {};
 
@@ -41,6 +42,27 @@ jobsController.getAcceptJobs = async (req, res) => {
     res.status(returnObj.statusCode).send(returnObj);
   }
 };
+
+jobsController.getCompleteJobs = async (req, res) => {
+  let returnObj = h.resultObject([], false, 500, constants.ERROR_RETRIEVING_RECORD);
+  try {
+    let filter = { user_id: req.user.user_id, service_type_id: constants.FORRE_MASHWARA_ID };
+    let result = await jobsModel.getCompleteJobs(filter);
+    if (h.checkNotEmpty(result)) {
+      returnObj = h.resultObject(result, true, 200, constants.RECORD_FOUND);
+    } else {
+      returnObj = h.resultObject([], false, 200, constants.RECORD_NOT_FOUND);
+    }
+  } catch (e) {
+    throw e;
+  } finally {
+    res.status(returnObj.statusCode).send(returnObj);
+  }
+};
+
+
+
+
 
 jobsController.acceptJob = async (req, res) => {
   let returnObj = h.resultObject([], false, 500, constants.BAD_REQUEST);
@@ -83,5 +105,27 @@ jobsController.denyJob = async (req, res) => {
     res.status(returnObj.statusCode).send(returnObj);
   }
 };
+
+
+jobsController.completeJob = async (req, res) => {
+  let returnObj = h.resultObject([], false, 500, constants.BAD_REQUEST);
+  try {
+    let obj = h.getProps2(req);
+    const updateData = { job_status_id: constants.COMPLETED, updated_by: req.user.user_id };
+    const pendingJob = await jobsModel.completeJob({ ...obj, job_status_id: ASSIGNED, agent_id: req.user.agent_id }, updateData); //assign for update iteration where assign iter
+    if (h.exists(pendingJob)) {
+      returnObj = h.resultObject([], true, 200, constants.SUCCESS_UPDATE);
+    } else {
+      returnObj = h.resultObject([], false, 404, constants.ERROR_UPDATING_RECORD);
+    }
+  } catch (e) {
+    returnObj = h.resultObject([], false, 500, constants.ERROR_UPDATION_FAILED);
+    throw e;
+  } finally {
+    res.status(returnObj.statusCode).send(returnObj);
+  }
+};
+
+
 
 module.exports = jobsController;
