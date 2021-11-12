@@ -60,10 +60,6 @@ jobsController.getCompleteJobs = async (req, res) => {
   }
 };
 
-
-
-
-
 jobsController.acceptJob = async (req, res) => {
   let returnObj = h.resultObject([], false, 500, constants.BAD_REQUEST);
   try {
@@ -86,7 +82,6 @@ jobsController.acceptJob = async (req, res) => {
   }
 };
 
-
 jobsController.denyJob = async (req, res) => {
   let returnObj = h.resultObject([], false, 500, constants.BAD_REQUEST);
   try {
@@ -106,14 +101,14 @@ jobsController.denyJob = async (req, res) => {
   }
 };
 
-
 jobsController.completeJob = async (req, res) => {
   let returnObj = h.resultObject([], false, 500, constants.BAD_REQUEST);
   try {
     let obj = h.getProps2(req);
     const updateData = { job_status_id: constants.COMPLETED, updated_by: req.user.user_id };
-    const pendingJob = await jobsModel.completeJob({ ...obj, job_status_id: ASSIGNED, agent_id: req.user.agent_id }, updateData); //assign for update iteration where assign iter
-    if (h.exists(pendingJob)) {
+    //assign for update iteration where assign iter
+    const completeJob = await jobsModel.completeJob({ ...obj, job_status_id: ASSIGNED, agent_id: req.user.agent_id }, updateData);
+    if (h.exists(completeJob)) {
       returnObj = h.resultObject([], true, 200, constants.SUCCESS_UPDATE);
     } else {
       returnObj = h.resultObject([], false, 404, constants.ERROR_UPDATING_RECORD);
@@ -125,7 +120,5 @@ jobsController.completeJob = async (req, res) => {
     res.status(returnObj.statusCode).send(returnObj);
   }
 };
-
-
 
 module.exports = jobsController;
