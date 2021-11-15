@@ -43,30 +43,29 @@ jobsModel.jobExists = async (params) => {
 jobsModel.assignIterationExists = async (params) => {
   const result = await knex.select('*')
     .from({
-      j: 'tbl_job_iterations'
+      j: 'vu_doctor_accept_jobs'
     }).modify(qb => {
       if (h.checkExistsNotEmpty(params, 'agent_id')) {
         qb.where('j.agent_id', params.agent_id)
-          .andWhere('j.job_status_id', params.job_status_id)
       }
     }).first()
     .then(res => res, err => { throw err });
   return result;
 };
 
-jobsModel.assignServiceExists = async (params) => {
+jobsModel.isAssignedIteration = async (params) => {
   const result = await knex.select('*')
     .from({
-      j: 'tbl_job_iterations'
+      j: 'vu_doctor_accept_jobs'
     }).modify(qb => {
-      if (h.checkExistsNotEmpty(params, 'job_detail_id') && h.checkExistsNotEmpty(params, 'agent_id')) {
+      if (h.checkExistsNotEmpty(params, 'agent_id')) {
         qb.where('j.job_detail_id', params.job_detail_id)
           .andWhere('j.agent_id', params.agent_id)
-          .andWhere('j.job_status_id', params.job_status_id)
       }
     }).first()
     .then(res => res, err => { throw err });
   return result;
+
 };
 
 

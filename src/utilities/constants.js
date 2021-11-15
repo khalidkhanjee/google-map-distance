@@ -23,7 +23,7 @@ module.exports = Object.freeze({
   CANCELLED_N_ACCEPTED: "The job is cancelled, cannot be accepted.",
   COMPLETED_N_ACCEPTED: "The job is completed, cannot be accepted.",
 
-  PENDING_N_DENIED: "The job is pending, cannot be denied.",
+  PENDING_N_DENIED: "The job is pending, cannot be denied or completed.",
   CANCELLED_N_DENIED: "The job is cancelled, cannot be denied or cancelled again.",
   COMPLETED_N_DENIED: "The job is completed, cannot be denied or completed again.",
   //eshifa IDs

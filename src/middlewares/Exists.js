@@ -3,6 +3,7 @@ const h = require("../utilities/helper");
 const constants = require("../utilities/constants");
 const jobsModel = require('../models/jobsModel');
 const { COMPLETED } = require("../utilities/constants");
+const exit = require("exit");
 // const { INVALID_EMAIL } = require("../utilities/constants");
 
 const Exists = {};
@@ -77,11 +78,11 @@ Exists.isInProgressJobID = async (req, res, next) => {
   }
 };
 
-Exists.assignIteration = async (req, res, next) => { //assign iteration find by user_id 
+Exists.haveAssignedIteration = async (req, res, next) => { //assign iteration find by user_id 
   let returnObj = h.resultObject([], false, 500, constants.BAD_REQUEST);
   try {
     const { user } = req;
-    const row = await jobsModel.assignIterationExists({ agent_id: user.agent_id, job_status_id: constants.ASSIGNED });
+    const row = await jobsModel.assignIterationExists({ agent_id: user.agent_id });
     if (h.checkExistsNotEmptyGreaterZero(row, 'job_detail_id')) {
       next();
     } else {
@@ -94,11 +95,29 @@ Exists.assignIteration = async (req, res, next) => { //assign iteration find by 
   }
 };
 
-Exists.assignService = async (req, res, next) => { //assign iteration find by job_detail_id 
+Exists.haveNoAssignedIteration = async (req, res, next) => { //assign iteration find by user_id
   let returnObj = h.resultObject([], false, 500, constants.BAD_REQUEST);
   try {
     const { user } = req;
-    const row = await jobsModel.assignServiceExists({ job_detail_id: req.body.job_detail_id, agent_id: user.agent_id, job_status_id: constants.ASSIGNED });
+    const row = await jobsModel.assignIterationExists({ agent_id: user.agent_id });
+    if (!h.checkExistsNotEmptyGreaterZero(row, 'job_detail_id')) {
+      next();
+    } else {
+      returnObj = h.resultObject([], false, 404, constants.ALREADY_JOB_ASSIGN);
+      res.status(returnObj.statusCode).send(returnObj);
+    }
+  } catch (e) {
+    res.status(returnObj.statusCode).send(returnObj);
+    throw e;
+  }
+};
+
+
+Exists.isAssignedIteration = async (req, res, next) => { //assign iteration find by job_detail_id 
+  let returnObj = h.resultObject([], false, 500, constants.BAD_REQUEST);
+  try {
+    const { user } = req;
+    const row = await jobsModel.isAssignedIteration({ job_detail_id: req.body.job_detail_id, agent_id: user.agent_id });
     if (h.checkExistsNotEmptyGreaterZero(row, 'job_detail_id')) {
       next();
     } else {

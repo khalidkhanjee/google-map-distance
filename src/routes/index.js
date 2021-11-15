@@ -27,11 +27,11 @@ router.get('/job/accept', jobsController.getAcceptJobs);
 router.get('/job/complete', jobsController.getCompleteJobs);
 
 
-router.put('/job/:job_id/accept', auth.userStatus, exists.isValidJobID, exists.isPendingJobID, exists.assignIteration, jobsController.acceptJob);
+router.put('/job/:job_id/accept', auth.userStatus, exists.isValidJobID, exists.isPendingJobID, exists.haveNoAssignedIteration, jobsController.acceptJob);
 
-router.put('/job/:job_id/deny', auth.userStatus, exists.isValidJobID, exists.isInProgressJobID, exists.assignIteration, jobsController.denyJob);
+router.put('/job/:job_id/deny', auth.userStatus, exists.isValidJobID, exists.isInProgressJobID, exists.haveAssignedIteration, jobsController.denyJob);
 
-router.put('/job/:job_id/complete', auth.userStatus, exists.isValidJobID, exists.isInProgressJobID, exists.assignService, jobsController.completeJob);
+router.put('/job/:job_id/complete', auth.userStatus, exists.isValidJobID, exists.isInProgressJobID, exists.isAssignedIteration, jobsController.completeJob);
 
 //User routes
 router.put('/user/change', userController.changeStatus);
