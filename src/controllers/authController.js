@@ -7,28 +7,28 @@ const bcrypt = require('bcrypt');
 authController = {};
 
 authController.login = async (req, res) => {
-  let returnObj = h.resultObject([], false, 500, constants.BAD_REQUEST);
+  let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
   try {
     const postData = h.getProps(req);
     if (!h.checkExistsNotEmpty(postData, 'user_name')) {
-      returnObj = h.resultObject([], false, 422, constants.EMPTY_EMAIL);
+      returnObj = h.resultObject(null, false, 422, constants.EMPTY_EMAIL);
     } else if (!h.checkExistsNotEmpty(postData, 'user_password')) {
-      returnObj = h.resultObject([], false, 422, constants.EMPTY_PASSWORD);
+      returnObj = h.resultObject(null, false, 422, constants.EMPTY_PASSWORD);
     } else {
       const data = await loginGeneric(postData);
       if (h.checkExistsNotEmpty(data, 'emailNotFound')) {
-        returnObj = h.resultObject([], false, 401, constants.INVALID_EMAIL);
+        returnObj = h.resultObject(null, false, 200, constants.INVALID_EMAIL);
       } else if (h.checkExistsNotEmpty(data, 'incorrectPassword')) {
-        returnObj = h.resultObject([], false, 401, constants.INVALID_PASSWORD);
+        returnObj = h.resultObject(null, false, 200, constants.INVALID_PASSWORD);
       } else if (h.checkExistsNotEmpty(data, 'inActiveUser')) {
-        returnObj = h.resultObject([], false, 401, constants.ACCOUNT_INACTIVE);
+        returnObj = h.resultObject(null, false, 200, constants.ACCOUNT_INACTIVE);
       } else {
         if (h.exists(data)) {
           const userObject = getUserObject(data);
           token = getToken(userObject);
           returnObj = h.resultObject(token, true, 200, constants.LOGGED_IN);
         } else {
-          returnObj = h.resultObject([], false, 200, constants.USER_NOT_FOUND);
+          returnObj = h.resultObject(null, false, 200, constants.USER_NOT_FOUND);
         }
       }
     }

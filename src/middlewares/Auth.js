@@ -18,21 +18,21 @@ Auth.check = async (req, res, next) => {
     req.user = legit.user;
     next();
   } catch (error) {
-    returnObj = h.resultObject([], false, 401, constants.AUTH_FAILED);
+    returnObj = h.resultObject(null, false, 401, constants.AUTH_FAILED);
     res.status(401).send(returnObj);
   }
 };
 
 
 Auth.userStatus = async (req, res, next) => {
-  let returnObj = h.resultObject([], false, 500, constants.BAD_REQUEST);
+  let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
   try {
     const { user } = req;
     let row = await authModel.getOne({ user_id: user.user_id });
     if (row.active_status === constants.ACTIVE) {
       next();
     } else if (row.active_status === constants.IN_ACTIVE) {
-      returnObj = h.resultObject([], false, 404, constants.OFFLINE_STATUS);
+      returnObj = h.resultObject(null, false, 404, constants.OFFLINE_STATUS);
       res.status(returnObj.statusCode).send(returnObj);
     }
   } catch (e) {
