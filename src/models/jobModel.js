@@ -1,4 +1,4 @@
-const h = require('./../utilities/helper');
+const h = require('../utilities/helper');
 const knex = require('../config/knex');
 const { LOGGED_IN } = require('../utilities/constants');
 const jobsModel = {};
