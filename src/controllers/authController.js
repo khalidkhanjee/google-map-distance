@@ -87,7 +87,9 @@ const getUserObject = user => {
   let obj = {
     user_id: user.user_id,
     user_name: user.user_name,
+    display_name: user.display_name,
     agent_id: user.agent_id,
+    user_image_url: constants.USER_IMAGE_PATH + user.file_name,
     active_status: user.active_status
   }
   return obj;

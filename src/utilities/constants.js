@@ -1,3 +1,4 @@
+
 module.exports = Object.freeze({
   AUTH_FAILED: 'Authentication Failed!',
   EMPTY_PASSWORD: 'Password Field Cannot be Empty',
@@ -59,6 +60,13 @@ module.exports = Object.freeze({
   SUCCESS_INSERTION: 'Record successfully added.',
 
   DB_ERROR: 'Error! Database error is occurred.',
+
+  //Paths 
+
+  USER_IMAGE_PATH: process.env.FMS_URL + 'public/uploads/user-images/',
+
+
+
 
   CURRENT_PASSWORD: 'Please enter current password',
   NEW_PASSWORD: 'Please enter new password',

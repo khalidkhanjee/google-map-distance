@@ -15,6 +15,8 @@ jobController.getNewJobs = async (req, res) => {
     let filter = { user_id: req.user.user_id, service_type_id: constants.FORRE_MASHWARA_ID };
     let result = await jobModel.getNewJobs(filter);
     if (h.checkNotEmpty(result)) {
+      getUserImage_url(result);
+      console.log('return', result);
       returnObj = h.resultObject(result, true, 200, constants.RECORD_FOUND);
     } else {
       returnObj = h.resultObject(null, false, 200, constants.RECORD_NOT_FOUND);
@@ -26,12 +28,15 @@ jobController.getNewJobs = async (req, res) => {
   }
 };
 
+
 jobController.getAcceptJobs = async (req, res) => {
   let returnObj = h.resultObject(null, false, 500, constants.ERROR_RETRIEVING_RECORD);
   try {
     let filter = { user_id: req.user.user_id, service_type_id: constants.FORRE_MASHWARA_ID };
     let result = await jobModel.getAcceptJobs(filter);
+
     if (h.checkNotEmpty(result)) {
+      getUserImage_url(result);
       returnObj = h.resultObject(result, true, 200, constants.RECORD_FOUND);
     } else {
       returnObj = h.resultObject(null, false, 200, constants.RECORD_NOT_FOUND);
@@ -49,6 +54,7 @@ jobController.getCompleteJobs = async (req, res) => {
     let filter = { user_id: req.user.user_id, service_type_id: constants.FORRE_MASHWARA_ID };
     let result = await jobModel.getCompleteJobs(filter);
     if (h.checkNotEmpty(result)) {
+      getUserImage_url(result);
       returnObj = h.resultObject(result, true, 200, constants.RECORD_FOUND);
     } else {
       returnObj = h.resultObject(null, false, 200, constants.RECORD_NOT_FOUND);
@@ -59,6 +65,14 @@ jobController.getCompleteJobs = async (req, res) => {
     res.status(returnObj.statusCode).send(returnObj);
   }
 };
+
+//create and get user image url 
+const getUserImage_url = result => {
+  for (const r of result) {
+    r.user_image_url = constants.USER_IMAGE_PATH + r.user_image;
+    delete r.user_image;
+  }
+}
 
 jobController.acceptJob = async (req, res) => {
   let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
