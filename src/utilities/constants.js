@@ -66,8 +66,6 @@ module.exports = Object.freeze({
   USER_IMAGE_PATH: process.env.FMS_URL + 'public/uploads/user-images/',
 
 
-
-
   CURRENT_PASSWORD: 'Please enter current password',
   NEW_PASSWORD: 'Please enter new password',
   SAME_PASSWORD: 'You are entering same password as your old one!',

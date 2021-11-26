@@ -1,3 +1,4 @@
+const config = require('../config/config');
 const h = require('../utilities/helper');
 const constants = require("../utilities/constants");
 const jobModel = require('../models/jobModel');
@@ -75,6 +76,7 @@ const getUserImage_url = result => {
 }
 
 jobController.acceptJob = async (req, res) => {
+  console.log(req);
   let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
   try {
     let obj = h.getProps2(req);
@@ -135,4 +137,19 @@ jobController.completeJob = async (req, res) => {
   }
 };
 
+
+jobController.firebase = async (req, res) => {
+  let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
+  try {
+    // const obj = { payment_status job_type};
+    const db = await config.ref('users').child('193').child('jobs').child('94712').update({ job_status: 'Pending' });
+  } catch (e) {
+    returnObj = h.resultObject(null, false, 500, constants.ERROR_UPDATION_FAILED);
+    throw e;
+  } finally {
+    res.status(returnObj.statusCode).send(returnObj);
+  }
+};
+
+// $this -> database -> getReference('users') -> getChild($jobUser -> customer_user_id) -> getChild('jobs') -> getChild($job_id) -> update($jobs_data)
 module.exports = jobController;

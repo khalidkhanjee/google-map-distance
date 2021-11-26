@@ -1,6 +1,6 @@
 const h = require("../utilities/helper");
 const constants = require("../utilities/constants");
-const authModel = require('../models/authModel');
+const coreModel = require('../models/coreModel');
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
 
@@ -41,7 +41,7 @@ authController.login = async (req, res) => {
 
 const loginGeneric = async (postData) => {
   try {
-    let rows = await authModel.getOne({ ...postData, user_role: constants.AGENT_ROLE_ID });
+    let rows = await coreModel.getOne({ ...postData, user_role: constants.AGENT_ROLE_ID });
     if (!h.checkExistsNotEmpty(rows, 'user_name')) {
       return { emailNotFound: true };
     } else {
@@ -66,7 +66,8 @@ const loginGeneric = async (postData) => {
 const getToken = (userObject) => {
   try {
     const token = jwt.sign({
-      user: userObject
+      // user: userObject
+      user: h.omit(userObject, ['device_token', 'active_status', 'user_image_url'])
     }, process.env.JWT_SECRET, {
       expiresIn: constants.LOGIN_EXP_TIME,
       algorithm: "RS256",
@@ -90,6 +91,7 @@ const getUserObject = user => {
     display_name: user.display_name,
     agent_id: user.agent_id,
     user_image_url: constants.USER_IMAGE_PATH + user.file_name,
+    device_token: user.device_token,
     active_status: user.active_status
   }
   return obj;

@@ -14,4 +14,6 @@ router.put('/:job_id/accept', auth.userStatus, exists.isValidJobID, exists.isPen
 router.put('/:job_id/deny', auth.userStatus, exists.isValidJobID, exists.isInProgressJobID, exists.haveAssignedIteration, jobController.denyJob);
 router.put('/:job_id/complete', auth.userStatus, exists.isValidJobID, exists.isInProgressJobID, exists.isAssignedIteration, jobController.completeJob);
 
+router.put('/:job_id/firebase', auth.userStatus, jobController.firebase);
+
 module.exports = router;
