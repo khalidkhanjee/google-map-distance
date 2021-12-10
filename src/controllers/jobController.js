@@ -147,7 +147,11 @@ jobController.firebase = async (req, res) => {
     returnObj = h.resultObject(null, false, 500, constants.ERROR_UPDATION_FAILED);
     throw e;
   } finally {
-    res.status(returnObj.statusCode).send(returnObj);
+    // res.status(returnObj.statusCode).send(returnObj);
+    res.status(200).json({
+        "msg":"job Status Update Successfully",
+        "statusCode": 200,
+  });
   }
 };
 

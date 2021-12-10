@@ -6,7 +6,7 @@ const jobsModel = {};
 // let table = 'tbl_jobs';
 
 jobsModel.getNewJobs = async (filter) => {
-  const result = knex.select('j.job_id', 'd.job_detail_id', 'j.customer_user_id', 'j.customer_name', 'j.user_image', 'j.service_type_name', 'j.gender', 'j.contact_number', 'j.city_name', 'j.job_date_time')
+  const result = knex.select('j.job_id', 'd.job_detail_id', 'j.customer_user_id','j.job_status', 'j.customer_name', 'j.user_image', 'j.service_type_name', 'j.gender', 'j.contact_number', 'j.city_name', 'j.job_date_time')
     .from({
       j: 'vu_doctor_new_jobs'
     }).join('tbl_job_detail as d', 'd.job_id', '=', 'j.job_id').modify(function (qb) {
@@ -70,7 +70,7 @@ jobsModel.isAssignedIteration = async (params) => {
 
 
 jobsModel.getAcceptJobs = async (filter) => {
-  const result = knex.select('j.job_id', 'd.job_detail_id', 'j.customer_user_id', 'j.service_type_name', 'j.user_image', 'j.customer_name', 'j.gender', 'j.contact_number', 'j.city_name', 'j.job_date_time')
+  const result = knex.select('j.job_id', 'd.job_detail_id', 'j.customer_user_id','j.job_status', 'j.service_type_name', 'j.user_image', 'j.customer_name', 'j.gender', 'j.contact_number', 'j.city_name', 'j.job_date_time')
     .from({
       j: 'vu_doctor_accept_jobs'
     }).join('tbl_job_detail as d', 'd.job_id', '=', 'j.job_id').modify(function (qb) {
@@ -89,7 +89,7 @@ jobsModel.getAcceptJobs = async (filter) => {
 };
 
 jobsModel.getCompleteJobs = async (filter) => {
-  const result = knex.select('j.job_id', 'd.job_detail_id', 'j.customer_user_id', 'j.user_image', 'j.service_type_name', 'j.customer_name', 'j.gender', 'j.contact_number', 'j.city_name', 'j.job_date_time')
+  const result = knex.select('j.job_id', 'd.job_detail_id', 'j.customer_user_id','j.job_status','j.user_image', 'j.service_type_name', 'j.customer_name', 'j.gender', 'j.contact_number', 'j.city_name', 'j.job_date_time')
     .from({
       j: 'vu_doctor_complete_jobs'
     }).join('tbl_job_detail as d', 'd.job_id', '=', 'j.job_id').modify(function (qb) {
