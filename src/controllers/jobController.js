@@ -14,7 +14,8 @@ jobController.getNewJobs = async (req, res) => {
   let returnObj = h.resultObject(null, false, 500, constants.ERROR_RETRIEVING_RECORD);
   try {
     let filter = { user_id: req.user.user_id, service_type_id: constants.FORRE_MASHWARA_ID };
-    console.log("test")
+    // console.log("test")
+    // console.log("test")
     let result = await jobModel.getNewJobs(filter);
     if (h.checkNotEmpty(result)) {
       getUserImage_url(result);
