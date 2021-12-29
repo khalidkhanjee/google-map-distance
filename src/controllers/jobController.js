@@ -4,6 +4,7 @@ const constants = require("../utilities/constants");
 const jobModel = require('../models/jobModel');
 const coreModel = require('../models/coreModel');
 
+
 const var_dump = require('var_dump');
 const exit = require('exit');
 const { ASSIGNED } = require('../utilities/constants');
@@ -14,8 +15,6 @@ jobController.getNewJobs = async (req, res) => {
   let returnObj = h.resultObject(null, false, 500, constants.ERROR_RETRIEVING_RECORD);
   try {
     let filter = { user_id: req.user.user_id, service_type_id: constants.FORRE_MASHWARA_ID };
-    // console.log("test")
-    // console.log("test")
     let result = await jobModel.getNewJobs(filter);
     if (h.checkNotEmpty(result)) {
       getUserImage_url(result);
@@ -143,17 +142,12 @@ jobController.completeJob = async (req, res) => {
 jobController.firebase = async (req, res) => {
   let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
   try {
-    // const obj = { payment_status job_type};
-    const db = await config.ref('users').child('193').child('jobs').child('94712').update({ job_status: 'Pending' });
+    const db = await config.ref('users').child('193').child('jobs').child('94712').update({ job_status: 'Inprogress' });
   } catch (e) {
     returnObj = h.resultObject(null, false, 500, constants.ERROR_UPDATION_FAILED);
     throw e;
   } finally {
-    // res.status(returnObj.statusCode).send(returnObj);
-    res.status(200).json({
-        "msg":"job Status Update Successfully",
-        "statusCode": 200,
-  });
+    res.status(returnObj.statusCode).send(returnObj);
   }
 };
 
