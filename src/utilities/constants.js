@@ -20,6 +20,7 @@ module.exports = Object.freeze({
   OFFLINE_STATUS: "You are offline,please online then it will process.",
   ALREADY_JOB_ASSIGN: "Doctor have already assign one job.",
   ITEARTION_N_ASSIGN: "Assign iteration not found!",
+  ITEARTION_N_ONCALL: "Oncall iteration not found!",
   IN_PROGRESS_N_ACCEPTED: "The job is in progress, cannot be accepted again.",
   CANCELLED_N_ACCEPTED: "The job is cancelled, cannot be accepted.",
   COMPLETED_N_ACCEPTED: "The job is completed, cannot be accepted.",
@@ -36,6 +37,9 @@ module.exports = Object.freeze({
   ASSIGNED: 2,
   CANCELLED: 3,
   COMPLETED: 6,
+  ONCALL: 7,
+  // CALL_COMPLETED: 8,
+
 
   ACTIVE: 1,
   IN_ACTIVE: 0,

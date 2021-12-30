@@ -129,4 +129,21 @@ Exists.isAssignedIteration = async (req, res, next) => { //assign iteration find
     throw e;
   }
 };
+
+Exists.isOncallIteration = async (req, res, next) => { //assign iteration find by job_detail_id 
+  let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
+  try {
+    const { user } = req;
+    const row = await jobModel.isOncallIteration({ job_detail_id: req.body.job_detail_id, agent_id: user.agent_id });
+    if (h.checkExistsNotEmptyGreaterZero(row, 'job_detail_id')) {
+      next();
+    } else {
+      returnObj = h.resultObject(null, false, 404, constants.ITEARTION_N_ONCALL);
+      res.status(returnObj.statusCode).send(returnObj);
+    }
+  } catch (e) {
+    res.status(returnObj.statusCode).send(returnObj);
+    throw e;
+  }
+};
 module.exports = Exists;
