@@ -97,28 +97,28 @@ const getUserImage_url = result => {
 
 jobController.acceptJob = async (req, res) => {
   console.log(req);
-  let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
-  try {
-    let obj = h.getProps2(req);
-    let iteration_date_time = obj.iteration_date + ' ' + obj.iteration_time;
-    let user_id = obj.customer_user_id;
-    delete obj.customer_user_id;
-    let assignData = { ...obj, user_id: user_id, job_status_id: constants.ASSIGNED, unix_iteration_date_time: Date.parse(iteration_date_time) / 1000, added_by: req.user.user_id };
+  // let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
+  // try {
+  //   let obj = h.getProps2(req);
+  //   let iteration_date_time = obj.iteration_date + ' ' + obj.iteration_time;
+  //   let user_id = obj.customer_user_id;
+  //   delete obj.customer_user_id;
+  //   let assignData = { ...obj, user_id: user_id, job_status_id: constants.ASSIGNED, unix_iteration_date_time: Date.parse(iteration_date_time) / 1000, added_by: req.user.user_id };
 
-    let iterationLogs = { job_status_id: constants.ASSIGNED, added_by: req.user.user_id, log_description: 'Doctor accepted this job.' };
+  //   let iterationLogs = { job_status_id: constants.ASSIGNED, added_by: req.user.user_id, log_description: 'Doctor accepted this job.' };
 
-    const assignJob = await jobModel.assignJob({ ...obj, job_status_id: constants.IN_PROGRESS }, assignData, iterationLogs);
-    if (h.exists(assignJob)) {
-      returnObj = h.resultObject(null, true, 200, constants.SUCCESS_UPDATE);
-    } else {
-      returnObj = h.resultObject(null, false, 404, constants.ERROR_UPDATING_RECORD);
-    }
-  } catch (e) {
-    returnObj = h.resultObject(null, false, 500, constants.ERROR_UPDATION_FAILED);
-    throw e;
-  } finally {
-    res.status(returnObj.statusCode).send(returnObj);
-  }
+  //   const assignJob = await jobModel.assignJob({ ...obj, job_status_id: constants.IN_PROGRESS }, assignData, iterationLogs);
+  //   if (h.exists(assignJob)) {
+  //     returnObj = h.resultObject(null, true, 200, constants.SUCCESS_UPDATE);
+  //   } else {
+  //     returnObj = h.resultObject(null, false, 404, constants.ERROR_UPDATING_RECORD);
+  //   }
+  // } catch (e) {
+  //   returnObj = h.resultObject(null, false, 500, constants.ERROR_UPDATION_FAILED);
+  //   throw e;
+  // } finally {
+  //   res.status(returnObj.statusCode).send(returnObj);
+  // }
 };
 
 jobController.denyJob = async (req, res) => {
