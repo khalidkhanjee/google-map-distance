@@ -3,7 +3,7 @@ const knex = require('../config/knex');
 const coreModel = {};
 
 coreModel.update = async (params, table, where) => {
-  console.log("param", params);
+  //console.log("param", params);
   const updated = await knex(table).returning().where(where).update(params).catch(err => {
     throw err;
   });

@@ -96,7 +96,7 @@ const getUserImage_url = result => {
 }
 
 jobController.acceptJob = async (req, res) => {
-  // console.log(req);
+  console.log(req);
   let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
   try {
     let obj = h.getProps2(req);
