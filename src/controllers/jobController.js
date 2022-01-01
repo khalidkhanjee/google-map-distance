@@ -31,7 +31,6 @@ jobController.getNewJobs = async (req, res) => {
   }
 };
 
-
 jobController.getAcceptJobs = async (req, res) => {
   let returnObj = h.resultObject(null, false, 500, constants.ERROR_RETRIEVING_RECORD);
   try {
@@ -96,41 +95,44 @@ const getUserImage_url = result => {
 }
 
 jobController.acceptJob = async (req, res) => {
-  console.log(req);
-  // let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
-  // try {
-  //   let obj = h.getProps2(req);
-  //   let iteration_date_time = obj.iteration_date + ' ' + obj.iteration_time;
-  //   let user_id = obj.customer_user_id;
-  //   delete obj.customer_user_id;
-  //   let assignData = { ...obj, user_id: user_id, job_status_id: constants.ASSIGNED, unix_iteration_date_time: Date.parse(iteration_date_time) / 1000, added_by: req.user.user_id };
+  // console.log(req);
+  let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
+  try {
+    let obj = h.getProps2(req);
+    let iteration_date_time = obj.iteration_date + ' ' + obj.iteration_time;
+    let customer_user_id = obj.customer_user_id;
+    delete obj.customer_user_id;
 
-  //   let iterationLogs = { job_status_id: constants.ASSIGNED, added_by: req.user.user_id, log_description: 'Doctor accepted this job.' };
+    let assignData = { ...obj, user_id: customer_user_id, job_status_id: constants.ASSIGNED, unix_iteration_date_time: Date.parse(iteration_date_time) / 1000, added_by: req.user.user_id };
+    let iterationLogs = { job_status_id: constants.ASSIGNED, added_by: req.user.user_id, log_description: 'Doctor accepted this job.' };
+    const assignJob = await jobModel.assignJob({ ...obj, job_status_id: constants.IN_PROGRESS }, assignData, iterationLogs);
 
-  //   const assignJob = await jobModel.assignJob({ ...obj, job_status_id: constants.IN_PROGRESS }, assignData, iterationLogs);
-  //   if (h.exists(assignJob)) {
-  //     returnObj = h.resultObject(null, true, 200, constants.SUCCESS_UPDATE);
-  //   } else {
-  //     returnObj = h.resultObject(null, false, 404, constants.ERROR_UPDATING_RECORD);
-  //   }
-  // } catch (e) {
-  //   returnObj = h.resultObject(null, false, 500, constants.ERROR_UPDATION_FAILED);
-  //   throw e;
-  // } finally {
-  //   res.status(returnObj.statusCode).send(returnObj);
-  // }
+    if (h.exists(assignJob)) {
+      const firebaseInprogress = config.ref('users').child(customer_user_id).child('jobs').child(obj.job_id).update({ job_status: 'Inprogress' });
+      returnObj = h.resultObject(null, true, 200, constants.SUCCESS_UPDATE);
+    } else {
+      returnObj = h.resultObject(null, false, 404, constants.ERROR_UPDATING_RECORD);
+    }
+  } catch (e) {
+    returnObj = h.resultObject(null, false, 500, constants.ERROR_UPDATION_FAILED);
+    throw e;
+  } finally {
+    res.status(returnObj.statusCode).send(returnObj);
+  }
 };
 
 jobController.denyJob = async (req, res) => {
   let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
   try {
     let obj = h.getProps2(req);
-    const iterationCancel = { job_status_id: constants.CANCELLED, updated_by: req.user.user_id };
+    let customer_user_id = obj.customer_user_id;
 
+    const iterationCancel = { job_status_id: constants.CANCELLED, updated_by: req.user.user_id };
     let iterationLogs = { job_status_id: constants.CANCELLED, added_by: req.user.user_id, log_description: 'Doctor denied this job.' };
 
     const pendingJob = await jobModel.iterationCancel({ ...obj, job_status_id: constants.PENDING }, iterationCancel, iterationLogs);
     if (h.exists(pendingJob)) {
+      const firebasePending = config.ref('users').child(customer_user_id).child('jobs').child(obj.job_id).update({ job_status: 'Pending' });
       returnObj = h.resultObject(null, true, 200, constants.SUCCESS_UPDATE);
     } else {
       returnObj = h.resultObject(null, false, 404, constants.ERROR_UPDATING_RECORD);
@@ -147,11 +149,13 @@ jobController.callStart = async (req, res) => {
   let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
   try {
     let obj = h.getProps2(req);
-    const updateData = { job_status_id: constants.ONCALL, updated_by: req.user.user_id };
+    let customer_user_id = obj.customer_user_id;
 
+    const updateData = { job_status_id: constants.ONCALL, updated_by: req.user.user_id };
     let iterationLogs = { job_status_id: constants.ONCALL, added_by: req.user.user_id, log_description: 'Doctor started call for this job' };
     const callStart = await jobModel.callStart({ ...obj, job_status_id: constants.ASSIGNED, agent_id: req.user.agent_id }, updateData, iterationLogs);
     if (h.exists(callStart)) {
+      const firebaseOncall = config.ref('users').child(customer_user_id).child('jobs').child(obj.job_id).update({ job_status: 'Oncall' });
       returnObj = h.resultObject(null, true, 200, constants.SUCCESS_UPDATE);
     } else {
       returnObj = h.resultObject(null, false, 404, constants.ERROR_UPDATING_RECORD);
@@ -168,12 +172,14 @@ jobController.cancelJob = async (req, res) => {
   let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
   try {
     let obj = h.getProps2(req);
+    let customer_user_id = obj.customer_user_id;
     const updateData = { job_status_id: constants.CANCELLED, updated_by: req.user.user_id };
 
     let iterationLogs = { job_status_id: constants.CANCELLED, added_by: req.user.user_id, log_description: 'Doctor cancel this job.' };
 
     const cancelJob = await jobModel.cancelJob({ ...obj, job_status_id: constants.ONCALL, agent_id: req.user.agent_id }, updateData, iterationLogs);
     if (h.exists(cancelJob)) {
+      const firebasePending = config.ref('users').child(customer_user_id).child('jobs').child(obj.job_id).update({ job_status: 'Cancalled' });
       returnObj = h.resultObject(null, true, 200, constants.SUCCESS_UPDATE);
     } else {
       returnObj = h.resultObject(null, false, 404, constants.ERROR_UPDATING_RECORD);
@@ -186,18 +192,18 @@ jobController.cancelJob = async (req, res) => {
   }
 };
 
-
-
 jobController.completeJob = async (req, res) => {
   let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
   try {
     let obj = h.getProps2(req);
+    let customer_user_id = obj.customer_user_id;
     const updateData = { job_status_id: constants.COMPLETED, updated_by: req.user.user_id };
     //assign for update iteration where assign iter
     let iterationLogs = { job_status_id: constants.COMPLETED, added_by: req.user.user_id, log_description: 'Doctor completed this job.' };
 
     const completeJob = await jobModel.completeJob({ ...obj, job_status_id: constants.ONCALL, agent_id: req.user.agent_id }, updateData, iterationLogs);
     if (h.exists(completeJob)) {
+      const firebasePending = config.ref('users').child(customer_user_id).child('jobs').child(obj.job_id).update({ job_status: 'Completed' });
       returnObj = h.resultObject(null, true, 200, constants.SUCCESS_UPDATE);
     } else {
       returnObj = h.resultObject(null, false, 404, constants.ERROR_UPDATING_RECORD);
@@ -209,7 +215,6 @@ jobController.completeJob = async (req, res) => {
     res.status(returnObj.statusCode).send(returnObj);
   }
 };
-
 
 jobController.firebase = async (req, res) => {
   let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
