@@ -83,15 +83,21 @@ jobsModel.isOncallIteration = async (params) => {
 
 };
 
-
 jobsModel.getAcceptJobs = async (filter) => {
-  const result = knex.select('j.job_id', 'd.job_detail_id', 'j.customer_user_id', 'j.job_status_id', 'j.status_title', 'j.service_type_name', 'j.user_image', 'j.customer_name', 'j.gender', 'j.contact_number', 'j.city_name', 'j.job_date_time')
+  // console.log(filter);
+  const result = knex.select('j.iteration_id', 'j.job_id', 'j.job_detail_id', 'j.customer_user_id', 'j.job_status_id', 'j.status_title', 'j.service_type_name', 'j.user_image', 'j.customer_name', 'j.gender', 'j.contact_number', 'j.city_name', 'j.job_date_time')
     .from({
       j: 'vu_doctor_accept_jobs'
-    }).join('tbl_job_detail as d', 'd.job_id', '=', 'j.job_id').modify(function (qb) {
+    }).modify(function (qb) {
       if (h.exists(filter.service_type_id)) {
         qb.where('j.service_type_id', filter.service_type_id);
       }
+
+      if (h.exists(filter.iteration_id) && h.exists(filter.service_type_id)) {
+        qb.where('j.iteration_id', filter.iteration_id)
+          .andWhere('j.service_type_id', filter.service_type_id);
+      }
+
     }).then(res => {
       return res;
     },
@@ -104,7 +110,7 @@ jobsModel.getAcceptJobs = async (filter) => {
 };
 
 jobsModel.getOncallJobs = async (filter) => {
-  const result = knex.select('j.job_id', 'd.job_detail_id', 'j.customer_user_id', 'j.job_status_id', 'j.status_title', 'j.user_image', 'j.service_type_name', 'j.customer_name', 'j.gender', 'j.contact_number', 'j.city_name', 'j.job_date_time')
+  const result = knex.select('j.iteration_id', 'j.job_id', 'd.job_detail_id', 'j.customer_user_id', 'j.job_status_id', 'j.status_title', 'j.user_image', 'j.service_type_name', 'j.customer_name', 'j.gender', 'j.contact_number', 'j.city_name', 'j.job_date_time')
     .from({
       j: 'vu_doctor_oncall_jobs'
     }).join('tbl_job_detail as d', 'd.job_id', '=', 'j.job_id').modify(function (qb) {
@@ -123,7 +129,7 @@ jobsModel.getOncallJobs = async (filter) => {
 };
 
 jobsModel.getCompleteJobs = async (filter) => {
-  const result = knex.select('j.job_id', 'd.job_detail_id', 'j.customer_user_id', 'j.job_status_id', 'j.status_title', 'j.user_image', 'j.service_type_name', 'j.customer_name', 'j.gender', 'j.contact_number', 'j.city_name', 'j.job_date_time')
+  const result = knex.select('j.iteration_id', 'j.job_id', 'd.job_detail_id', 'j.customer_user_id', 'j.job_status_id', 'j.status_title', 'j.user_image', 'j.service_type_name', 'j.customer_name', 'j.gender', 'j.contact_number', 'j.city_name', 'j.job_date_time')
     .from({
       j: 'vu_doctor_complete_jobs'
     }).join('tbl_job_detail as d', 'd.job_id', '=', 'j.job_id').modify(function (qb) {
@@ -151,6 +157,7 @@ jobsModel.assignJob = async (params, assignData, logsData) => {
   delete assignData.job_id;
   try {
     return await knex.transaction(async (trx) => {
+      let getIterationId;
       if (h.checkExistsNotEmptyGreaterZero(params, 'job_id')) {
         await knex.table('tbl_jobs')
           .where(where)
@@ -161,11 +168,11 @@ jobsModel.assignJob = async (params, assignData, logsData) => {
           .update(status)
           .transacting(trx);
         await knex('tbl_job_iterations').insert(assignData).transacting(trx);
-        const getIterationId = knex('tbl_job_iterations').max('iteration_id').where(job_detail_id).andWhere({ job_status_id: logsData.job_status_id });
-        const iterationLogs = { ...logsData, iteration_id: getIterationId };
+        getIterationId = await knex('tbl_job_iterations').select(knex.raw('max(iteration_id) as iteration_id')).where(job_detail_id).first().transacting(trx);
+        const iterationLogs = { ...logsData, iteration_id: getIterationId.iteration_id };
         await knex('tbl_job_iteration_logs').insert(iterationLogs).transacting(trx);
       }
-      return h.objectKeysToLowerCase(trx);
+      return h.objectKeysToLowerCase(getIterationId.iteration_id);
     })
   } catch (e) {
     throw e;
@@ -174,26 +181,25 @@ jobsModel.assignJob = async (params, assignData, logsData) => {
 
 jobsModel.iterationCancel = async (params, cancelData, logsData) => {
   const where = { job_id: params.job_id };
-  const status = { job_status_id: params.job_status_id };
-  const job_detail_id = { job_detail_id: params.job_detail_id };
+  const job_status = { job_status_id: constants.PENDING };
+  const where_iteration = { iteration_id: params.iteration_id, agent_id: params.agent_id, job_status_id: params.job_status_id };
+
   try {
     return await knex.transaction(async (trx) => {
       if (h.checkExistsNotEmptyGreaterZero(params, 'job_id') && h.checkExistsNotEmptyGreaterZero(params, 'job_detail_id')) {
         await knex.table('tbl_jobs')
           .where(where)
-          .update(status)
+          .update(job_status)
           .transacting(trx);
         await knex.table('tbl_job_detail')
           .where(where)
-          .update(status)
+          .update(job_status)
           .transacting(trx);
         await knex.table('tbl_job_iterations')
-          .where(job_detail_id)
+          .where(where_iteration)
           .update(cancelData)
           .transacting(trx);
-        const getIterationId = knex('tbl_job_iterations').max('iteration_id').where(job_detail_id).andWhere({ job_status_id: logsData.job_status_id });
-        const iterationLogs = { ...logsData, iteration_id: getIterationId };
-        await knex('tbl_job_iteration_logs').insert(iterationLogs).transacting(trx);
+        await knex('tbl_job_iteration_logs').insert(logsData).transacting(trx);
       }
       return h.objectKeysToLowerCase(trx);
     })
@@ -203,19 +209,16 @@ jobsModel.iterationCancel = async (params, cancelData, logsData) => {
 };
 
 jobsModel.callStart = async (params, updateData, logsData) => {
-
-  const job_detail_id = { job_detail_id: params.job_detail_id };
-  const where_iteration = { agent_id: params.agent_id, job_detail_id: params.job_detail_id, job_status_id: params.job_status_id };
+  const where_iteration = { iteration_id: params.iteration_id, agent_id: params.agent_id, job_status_id: params.job_status_id };
   try {
     return await knex.transaction(async (trx) => {
+      let getIterationId;
       if (h.checkExistsNotEmptyGreaterZero(params, 'job_id') && h.checkExistsNotEmptyGreaterZero(params, 'job_detail_id')) {
         await knex.table('tbl_job_iterations')
           .where(where_iteration)
           .update(updateData)
           .transacting(trx);
-        const getIterationId = knex('tbl_job_iterations').max('iteration_id').where(job_detail_id).andWhere({ job_status_id: logsData.job_status_id });
-        const iterationLogs = { ...logsData, iteration_id: getIterationId };
-        await knex('tbl_job_iteration_logs').insert(iterationLogs).transacting(trx);
+        await knex('tbl_job_iteration_logs').insert(logsData).transacting(trx);
       }
       return h.objectKeysToLowerCase(trx);
     })
@@ -226,9 +229,7 @@ jobsModel.callStart = async (params, updateData, logsData) => {
 
 jobsModel.cancelJob = async (params, updateData, logsData) => {
   const job_id = { job_id: params.job_id };
-  const job_detail_id = { job_detail_id: params.job_detail_id };
-  const where_iteration = { agent_id: params.agent_id, job_detail_id: params.job_detail_id, job_status_id: params.job_status_id };
-  // const job_detail_id = {  };
+  const where_iteration = { iteration_id: params.iteration_id, agent_id: params.agent_id, job_status_id: params.job_status_id };
   try {
     return await knex.transaction(async (trx) => {
       if (h.checkExistsNotEmptyGreaterZero(params, 'job_id') && h.checkExistsNotEmptyGreaterZero(params, 'job_detail_id')) {
@@ -244,9 +245,7 @@ jobsModel.cancelJob = async (params, updateData, logsData) => {
           .where(where_iteration)
           .update(updateData)
           .transacting(trx);
-        const getIterationId = knex('tbl_job_iterations').max('iteration_id').where(job_detail_id).andWhere({ job_status_id: logsData.job_status_id });
-        const iterationLogs = { ...logsData, iteration_id: getIterationId };
-        await knex('tbl_job_iteration_logs').insert(iterationLogs).transacting(trx);
+        await knex('tbl_job_iteration_logs').insert(logsData).transacting(trx);
       }
       return h.objectKeysToLowerCase(trx);
     })
@@ -257,9 +256,7 @@ jobsModel.cancelJob = async (params, updateData, logsData) => {
 
 jobsModel.completeJob = async (params, updateData, logsData) => {
   const job_id = { job_id: params.job_id };
-  const job_detail_id = { job_detail_id: params.job_detail_id };
-  const where_iteration = { agent_id: params.agent_id, job_detail_id: params.job_detail_id, job_status_id: params.job_status_id };
-  // const job_detail_id = {  };
+  const where_iteration = { iteration_id: params.iteration_id, agent_id: params.agent_id, job_status_id: params.job_status_id };
   try {
     return await knex.transaction(async (trx) => {
       if (h.checkExistsNotEmptyGreaterZero(params, 'job_id') && h.checkExistsNotEmptyGreaterZero(params, 'job_detail_id')) {
@@ -275,9 +272,7 @@ jobsModel.completeJob = async (params, updateData, logsData) => {
           .where(where_iteration)
           .update(updateData)
           .transacting(trx);
-        const getIterationId = knex('tbl_job_iterations').max('iteration_id').where(job_detail_id).andWhere({ job_status_id: logsData.job_status_id });
-        const iterationLogs = { ...logsData, iteration_id: getIterationId };
-        await knex('tbl_job_iteration_logs').insert(iterationLogs).transacting(trx);
+        await knex('tbl_job_iteration_logs').insert(logsData).transacting(trx);
       }
       return h.objectKeysToLowerCase(trx);
     })

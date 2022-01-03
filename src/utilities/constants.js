@@ -24,6 +24,7 @@ module.exports = Object.freeze({
   IN_PROGRESS_N_ACCEPTED: "The job is in progress, cannot be accepted again.",
   CANCELLED_N_ACCEPTED: "The job is cancelled, cannot be accepted.",
   COMPLETED_N_ACCEPTED: "The job is completed, cannot be accepted.",
+  IN_PROGRESS_N_CANCEL_COMPLETED: "The job is not oncall, cannot be cancel or completed.",
 
   PENDING_N_DENIED: "The job is pending, cannot be denied or completed.",
   CANCELLED_N_DENIED: "The job is cancelled, cannot be denied or cancelled again.",
