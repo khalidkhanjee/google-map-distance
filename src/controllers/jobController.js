@@ -17,9 +17,9 @@ jobController.getNewJobs = async (req, res) => {
   try {
     let filter = { user_id: req.user.user_id, service_type_id: constants.FORRE_MASHWARA_ID };
     let result = await jobModel.getNewJobs(filter);
+    console.log(result);
     if (h.checkNotEmpty(result)) {
       getUserImage_url(result);
-      // console.log('return', result);
       returnObj = h.resultObject(result, true, 200, constants.RECORD_FOUND);
     } else {
       returnObj = h.resultObject(null, false, 200, constants.RECORD_NOT_FOUND);
@@ -102,12 +102,13 @@ jobController.acceptJob = async (req, res) => {
     let customer_user_id = obj.customer_user_id;
     delete obj.customer_user_id;
 
-    let assignData = { ...obj, user_id: customer_user_id, job_status_id: constants.ASSIGNED, unix_iteration_date_time: Date.parse(iteration_date_time) / 1000, added_by: req.user.user_id };
+    let assignData = { ...obj, agent_id: req.user.agent_id, user_id: customer_user_id, job_status_id: constants.ASSIGNED, unix_iteration_date_time: Date.parse(iteration_date_time) / 1000, added_by: req.user.user_id };
     let iterationLogs = { job_status_id: constants.ASSIGNED, added_by: req.user.user_id, log_description: 'Doctor accepted this job.' };
     const assignJob = await jobModel.assignJob({ ...obj, job_status_id: constants.IN_PROGRESS }, assignData, iterationLogs);
     let iteration_filter = { iteration_id: assignJob, user_id: req.user.user_id, service_type_id: constants.FORRE_MASHWARA_ID };
     let getAcceptJobs = await jobModel.getAcceptJobs(iteration_filter);
     if (h.exists(assignJob) && h.exists(getAcceptJobs)) {
+      getUserImage_url(getAcceptJobs);
       const firebaseInprogress = config.ref('users').child(customer_user_id).child('jobs').child(obj.job_id).update({ job_status: 'Inprogress' });
       returnObj = h.resultObject(getAcceptJobs, true, 200, constants.SUCCESS_UPDATE);
     } else {
@@ -159,6 +160,7 @@ jobController.callStart = async (req, res) => {
     let getAcceptJobs = await jobModel.getAcceptJobs(job_filter);
 
     if (h.exists(callStart) && h.checkNotEmpty(getAcceptJobs)) {
+      getUserImage_url(getAcceptJobs);
       const firebaseOncall = config.ref('users').child(customer_user_id).child('jobs').child(obj.job_id).update({ job_status: 'Oncall' });
       returnObj = h.resultObject(getAcceptJobs, true, 200, constants.SUCCESS_UPDATE);
     } else {
