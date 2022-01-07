@@ -83,6 +83,7 @@ Exists.haveAssignedIteration = async (req, res, next) => { //assign iteration fi
   try {
     const { user } = req;
     const row = await jobModel.assignIterationExists({ agent_id: user.agent_id });
+    // console.log(row);
     if (h.checkExistsNotEmptyGreaterZero(row, 'job_detail_id')) {
       next();
     } else {

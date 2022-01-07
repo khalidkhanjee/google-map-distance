@@ -3,12 +3,12 @@ const h = require('../utilities/helper');
 const constants = require("../utilities/constants");
 const jobModel = require('../models/jobModel');
 const coreModel = require('../models/coreModel');
-
+const Notification = require("../services/Notification");
 
 const var_dump = require('var_dump');
-const exit = require('exit');
-const { ASSIGNED } = require('../utilities/constants');
-const { constant } = require('underscore');
+// const exit = require('exit');
+// const { ASSIGNED } = require('../utilities/constants');
+// const { constant } = require('underscore');
 
 jobController = {};
 
@@ -17,7 +17,7 @@ jobController.getNewJobs = async (req, res) => {
   try {
     let filter = { user_id: req.user.user_id, service_type_id: constants.FORRE_MASHWARA_ID };
     let result = await jobModel.getNewJobs(filter);
-    console.log(result);
+    // console.log(result);
     if (h.checkNotEmpty(result)) {
       getUserImage_url(result);
       returnObj = h.resultObject(result, true, 200, constants.RECORD_FOUND);
@@ -85,13 +85,6 @@ jobController.getCompleteJobs = async (req, res) => {
   }
 };
 
-//create and get user image url 
-const getUserImage_url = result => {
-  for (const r of result) {
-    r.user_image_url = constants.USER_IMAGE_PATH + r.user_image;
-    delete r.user_image;
-  }
-}
 
 jobController.acceptJob = async (req, res) => {
   // console.log(req);
@@ -103,13 +96,20 @@ jobController.acceptJob = async (req, res) => {
     delete obj.customer_user_id;
 
     let assignData = { ...obj, agent_id: req.user.agent_id, user_id: customer_user_id, job_status_id: constants.ASSIGNED, unix_iteration_date_time: Date.parse(iteration_date_time) / 1000, added_by: req.user.user_id };
+
     let iterationLogs = { job_status_id: constants.ASSIGNED, added_by: req.user.user_id, log_description: 'Doctor accepted this job.' };
+
     const assignJob = await jobModel.assignJob({ ...obj, job_status_id: constants.IN_PROGRESS }, assignData, iterationLogs);
+
     let iteration_filter = { iteration_id: assignJob, user_id: req.user.user_id, service_type_id: constants.FORRE_MASHWARA_ID };
+
     let getAcceptJobs = await jobModel.getAcceptJobs(iteration_filter);
+
     if (h.exists(assignJob) && h.exists(getAcceptJobs)) {
       getUserImage_url(getAcceptJobs);
-      const firebaseInprogress = config.ref('users').child(customer_user_id).child('jobs').child(obj.job_id).update({ job_status: 'Inprogress' });
+
+      FirebaseUN({ job_id: obj.job_id, job_status: 'Inprogress', customer_user_id: customer_user_id, title: constants.JOB_ACCEPTED_TITLE, body: constants.JOB_ACCEPTED_BODY });
+
       returnObj = h.resultObject(getAcceptJobs, true, 200, constants.SUCCESS_UPDATE);
     } else {
       returnObj = h.resultObject(null, false, 404, constants.ERROR_UPDATING_RECORD);
@@ -133,7 +133,9 @@ jobController.denyJob = async (req, res) => {
 
     const cancelJob = await jobModel.iterationCancel({ ...obj, job_status_id: constants.ASSIGNED }, iterationCancel, iterationLogs);
     if (h.exists(cancelJob)) {
-      const firebasePending = config.ref('users').child(customer_user_id).child('jobs').child(obj.job_id).update({ job_status: 'Pending' });
+
+      FirebaseUN({ job_id: obj.job_id, job_status: 'Pending', customer_user_id: customer_user_id, title: constants.JOB_ACCEPTED_TITLE, body: constants.JOB_ACCEPTED_BODY });
+
       returnObj = h.resultObject(null, true, 200, constants.SUCCESS_UPDATE);
     } else {
       returnObj = h.resultObject(null, false, 404, constants.ERROR_UPDATING_RECORD);
@@ -161,7 +163,9 @@ jobController.callStart = async (req, res) => {
 
     if (h.exists(callStart) && h.checkNotEmpty(getAcceptJobs)) {
       getUserImage_url(getAcceptJobs);
-      const firebaseOncall = config.ref('users').child(customer_user_id).child('jobs').child(obj.job_id).update({ job_status: 'Oncall' });
+
+      FirebaseUN({ job_id: obj.job_id, job_status: 'Oncall', customer_user_id: customer_user_id, title: constants.JOB_ONCALL_TITLE, body: constants.JOB_ONCALL_BODY });
+
       returnObj = h.resultObject(getAcceptJobs, true, 200, constants.SUCCESS_UPDATE);
     } else {
       returnObj = h.resultObject(null, false, 404, constants.ERROR_UPDATING_RECORD);
@@ -185,7 +189,9 @@ jobController.cancelJob = async (req, res) => {
 
     const cancelJob = await jobModel.cancelJob({ ...obj, job_status_id: constants.ONCALL, agent_id: req.user.agent_id }, updateData, iterationLogs);
     if (h.exists(cancelJob)) {
-      const firebasePending = config.ref('users').child(customer_user_id).child('jobs').child(obj.job_id).update({ job_status: 'Cancalled' });
+
+      FirebaseUN({ job_id: obj.job_id, job_status: 'Cancelled', customer_user_id: customer_user_id, title: constants.JOB_CANCELLED_TITLE, body: constants.JOB_CANCELLED_BODY });
+
       returnObj = h.resultObject(null, true, 200, constants.SUCCESS_UPDATE);
     } else {
       returnObj = h.resultObject(null, false, 404, constants.ERROR_UPDATING_RECORD);
@@ -209,7 +215,9 @@ jobController.completeJob = async (req, res) => {
 
     const completeJob = await jobModel.completeJob({ ...obj, job_status_id: constants.ONCALL, agent_id: req.user.agent_id }, updateData, iterationLogs);
     if (h.exists(completeJob)) {
-      const firebasePending = config.ref('users').child(customer_user_id).child('jobs').child(obj.job_id).update({ job_status: 'Completed' });
+
+      FirebaseUN({ job_id: obj.job_id, job_status: 'Completed', customer_user_id: customer_user_id, title: constants.JOB_COMPLETED_TITLE, body: constants.JOB_COMPLETED_BODY });
+
       returnObj = h.resultObject(null, true, 200, constants.SUCCESS_UPDATE);
     } else {
       returnObj = h.resultObject(null, false, 404, constants.ERROR_UPDATING_RECORD);
@@ -222,17 +230,21 @@ jobController.completeJob = async (req, res) => {
   }
 };
 
-jobController.firebase = async (req, res) => {
-  let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
-  try {
-    const db = await config.ref('users').child('193').child('jobs').child('94712').update({ job_status: 'Inprogress' });
-  } catch (e) {
-    returnObj = h.resultObject(null, false, 500, constants.ERROR_UPDATION_FAILED);
-    throw e;
-  } finally {
-    res.status(returnObj.statusCode).send(returnObj);
-  }
-};
 
-// $this -> database -> getReference('users') -> getChild($jobUser -> customer_user_id) -> getChild('jobs') -> getChild($job_id) -> update($jobs_data)
+const FirebaseUN = async (data) => {
+  firebaseInprogress = config.ref('users').child(data.customer_user_id).child('jobs').child(data.job_id).update({ job_status: data.job_status });
+  const uDtoken = await coreModel.getDeviceToken({ user_id: data.customer_user_id });
+  const fireBn = Notification.firePushNotification({ device_token: [uDtoken.device_token], title: data.title, body: data.body });
+  const fbData = { activity: data.title, text: data.body, device_token: uDtoken.device_token, user_id: data.customer_user_id };
+  insertFBn = await coreModel.insert('tbl_firebasenotifications', fbData);
+}
+
+//create and get user image url 
+const getUserImage_url = result => {
+  for (const r of result) {
+    r.user_image_url = constants.USER_IMAGE_PATH + r.user_image;
+    delete r.user_image;
+  }
+}
+
 module.exports = jobController;

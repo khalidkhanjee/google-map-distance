@@ -11,12 +11,36 @@ coreModel.update = async (params, table, where) => {
     ;
 };
 
+coreModel.insert = async (table_name, data) => {
+  // console.log(data);
+  try {
+    return await knex.transaction(async (trx) => {
+      if (h.checkNotEmpty(table_name) && h.checkNotEmpty(data)) {
+        console.log('testing');
+        await knex(table_name).insert(data).transacting(trx);
+      }
+      return trx;
+    })
+  } catch (e) {
+    throw e;
+  }
+};
+
+coreModel.getDeviceToken = async (params) => {
+  const result = knex.select('u.device_token')
+    .from({
+      u: 'tbl_users',
+    }).modify(qb => { qb.where('u.user_id', params.user_id).first() })
+    .then(res => { return res }, err => { throw err });
+  return result;
+};
+
 
 coreModel.getOne = async (params) => {
-  const result = knex.select('u.*', 'a.agent_id')
+  const result = knex.select('u.*')
     .from({
-      u: 'tbl_users'
-    }).join('tbl_agents as a', 'a.user_id', '=', 'u.user_id').modify(qb => {
+      u: 'vu_doctors_users'
+    }).modify(qb => {
       if (h.checkExistsNotEmpty(params, 'user_id')) {
         qb.where('u.user_id', params.user_id)
       } else {

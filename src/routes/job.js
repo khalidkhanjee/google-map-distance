@@ -21,6 +21,4 @@ router.put('/:job_id/cancel', auth.userStatus, exists.isValidJobID, exists.isInP
 
 router.put('/:job_id/complete', auth.userStatus, exists.isValidJobID, exists.isInProgressJobID, exists.isOncallIteration, jobController.completeJob);
 
-router.put('/:job_id/firebase', auth.userStatus, jobController.firebase);
-
 module.exports = router;

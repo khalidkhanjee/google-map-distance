@@ -147,8 +147,6 @@ jobsModel.getCompleteJobs = async (filter) => {
   return result;
 };
 
-
-
 jobsModel.assignJob = async (params, assignData, logsData) => {
   const where = { job_id: params.job_id };
   const status = { job_status_id: params.job_status_id };

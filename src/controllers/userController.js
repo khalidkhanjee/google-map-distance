@@ -1,7 +1,6 @@
 const h = require('./../utilities/helper');
 const constants = require("../utilities/constants");
 const coreModel = require('../models/coreModel');
-// const Notification = require("../services/Notification");
 
 userController = {};
 
@@ -31,6 +30,7 @@ const getUserObject = user => {
   }
   return obj;
 }
+
 module.exports = userController;
 
 

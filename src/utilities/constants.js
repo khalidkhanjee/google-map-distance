@@ -29,6 +29,23 @@ module.exports = Object.freeze({
   PENDING_N_DENIED: "The job is pending, cannot be denied or completed.",
   CANCELLED_N_DENIED: "The job is cancelled, cannot be denied or cancelled again.",
   COMPLETED_N_DENIED: "The job is completed, cannot be denied or completed again.",
+
+  //Push notification message
+  JOB_ACCEPTED_TITLE: "Job accepted",
+  JOB_ACCEPTED_BODY: "Your job has accepted by doctor, Please wait for the call.",
+
+  JOB_DENIED_TITLE: "Job denied",
+  JOB_DENIED_BODY: "Your job has denied by doctor, Please wait for another doctor.",
+
+  JOB_ONCALL_TITLE: "Job oncall",
+  JOB_ONCALL_BODY: "Doctor is oncall, Please ready for call.",
+
+  JOB_CANCELLED_TITLE: "Job cancelled",
+  JOB_CANCELLED_BODY: "Your job has cancelled.",
+
+  JOB_COMPLETED_TITLE: "Job completed",
+  JOB_COMPLETED_BODY: "Your job has completed.",
+
   //eshifa IDs
   AGENT_ROLE_ID: 7,
   ADMIN_ROLE_ID: 1,
