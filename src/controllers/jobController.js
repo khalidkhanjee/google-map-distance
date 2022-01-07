@@ -134,7 +134,7 @@ jobController.denyJob = async (req, res) => {
     const cancelJob = await jobModel.iterationCancel({ ...obj, job_status_id: constants.ASSIGNED }, iterationCancel, iterationLogs);
     if (h.exists(cancelJob)) {
 
-      FirebaseUN({ job_id: obj.job_id, job_status: 'Pending', customer_user_id: customer_user_id, title: constants.JOB_ACCEPTED_TITLE, body: constants.JOB_ACCEPTED_BODY });
+      FirebaseUN({ job_id: obj.job_id, job_status: 'Pending', customer_user_id: customer_user_id, title: constants.JOB_DENIED_TITLE, body: constants.JOB_DENIED_BODY });
 
       returnObj = h.resultObject(null, true, 200, constants.SUCCESS_UPDATE);
     } else {
