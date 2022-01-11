@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
 
 authController = {};
+let user_table = 'tbl_users';
 
 authController.login = async (req, res) => {
   let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
@@ -26,6 +27,10 @@ authController.login = async (req, res) => {
         if (h.exists(data)) {
           const userObject = getUserObject(data);
           token = getToken(userObject);
+          if (h.exists(postData.device_token)) {
+            const tokenData = { user_id: data.user_id, device_token: postData.device_token };
+            deviceTokenUpdate(tokenData);
+          }
           returnObj = h.resultObject(token, true, 200, constants.LOGGED_IN);
         } else {
           returnObj = h.resultObject(null, false, 200, constants.USER_NOT_FOUND);
@@ -98,10 +103,12 @@ const getUserObject = user => {
 }
 
 authController.logout = async (req, res) => {
+  let obj = h.getProps2(req);
   let code = 500;
   let message = constants.LOGOUT_ERROR;
-
   try {
+    const tokenData = { user_id: obj.user_id, device_token: "" };
+    deviceTokenUpdate(tokenData);
     code = 200;
     message = constants.LOGOUT_SUCCESS;
   } catch (e) {
@@ -113,6 +120,12 @@ authController.logout = async (req, res) => {
     });
   }
 };
+
+const deviceTokenUpdate = async (user) => {
+  const params = { device_token: user.device_token }
+  const user_id = { user_id: user.user_id };
+  await coreModel.update(params, user_table, user_id);
+}
 
 module.exports = authController;
 

@@ -3,21 +3,23 @@ const knex = require('../config/knex');
 const coreModel = {};
 
 coreModel.update = async (params, table, where) => {
-  //console.log("param", params);
-  const updated = await knex(table).returning().where(where).update(params).catch(err => {
-    throw err;
-  });
-  return updated
-    ;
-};
-
-coreModel.insert = async (table_name, data) => {
-  // console.log(data);
   try {
     return await knex.transaction(async (trx) => {
-      if (h.checkNotEmpty(table_name) && h.checkNotEmpty(data)) {
-        console.log('testing');
-        await knex(table_name).insert(data).transacting(trx);
+      if (h.checkNotEmpty(table) && h.checkNotEmpty(params)) {
+        await knex(table).returning().where(where).update(params).transacting(trx);
+      }
+      return trx;
+    })
+  } catch (e) {
+    throw e;
+  }
+};
+
+coreModel.insert = async (params, table_name) => {
+  try {
+    return await knex.transaction(async (trx) => {
+      if (h.checkNotEmpty(table_name) && h.checkNotEmpty(params)) {
+        await knex(table_name).insert(params).transacting(trx);
       }
       return trx;
     })

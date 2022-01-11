@@ -5,7 +5,7 @@ const jobModel = require('../models/jobModel');
 const coreModel = require('../models/coreModel');
 const Notification = require("../services/Notification");
 
-const var_dump = require('var_dump');
+// const var_dump = require('var_dump');
 // const exit = require('exit');
 // const { ASSIGNED } = require('../utilities/constants');
 // const { constant } = require('underscore');
@@ -236,7 +236,7 @@ const FirebaseUN = async (data) => {
   const uDtoken = await coreModel.getDeviceToken({ user_id: data.customer_user_id });
   const fireBn = Notification.firePushNotification({ device_token: [uDtoken.device_token], title: data.title, body: data.body });
   const fbData = { activity: data.title, text: data.body, device_token: uDtoken.device_token, user_id: data.customer_user_id };
-  insertFBn = await coreModel.insert('tbl_firebasenotifications', fbData);
+  insertFBn = await coreModel.insert(fbData, 'tbl_firebasenotifications');
 }
 
 //create and get user image url 

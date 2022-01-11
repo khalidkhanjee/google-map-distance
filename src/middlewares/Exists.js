@@ -2,11 +2,36 @@ const jwt = require("jsonwebtoken");
 const h = require("../utilities/helper");
 const constants = require("../utilities/constants");
 const jobModel = require('../models/jobModel');
+const coreModel = require('../models/coreModel');
 const { COMPLETED } = require("../utilities/constants");
 const exit = require("exit");
 // const { INVALID_EMAIL } = require("../utilities/constants");
 
 const Exists = {};
+
+Exists.isValidUser = async (req, res, next) => {
+  let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
+  try {
+    let obj = h.getProps2(req);
+    if (h.checkExistsNotEmpty(obj, 'user_id')) {
+      let user = await coreModel.getOne({ ...obj });
+      if (h.checkExistsNotEmpty(user, 'user_id')) {
+        req.user = user;
+        next();
+      } else {
+        returnObj = h.resultObject(null, false, 404, constants.INVALID_ID);
+        res.status(returnObj.statusCode).send(returnObj);
+      }
+    } else {
+      returnObj = h.resultObject(null, false, 404, constants.ENTER_ID);
+      res.status(returnObj.statusCode).send(returnObj);
+    }
+  }
+  catch (e) {
+    res.status(returnObj.statusCode).send(returnObj);
+    throw e;
+  }
+};
 
 Exists.isValidJobID = async (req, res, next) => {
   let returnObj = h.resultObject(null, false, 500, constants.BAD_REQUEST);
